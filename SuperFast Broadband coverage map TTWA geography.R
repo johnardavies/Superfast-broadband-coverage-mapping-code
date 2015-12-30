@@ -1,9 +1,9 @@
 ###################################Mapping superfast broadband coverage in the UK ####################################
-############################################################################################################
+######################################################################################################################
 #This programme calculates and maps average broadband penetration levels by Travel to Work Area (TTWA)
 #It uses postcode level data on broadband coverage from Ofcom, a lookup table from postcodes to coordinates
 # and 2001 TTWA shapefile data
-#######################################################################################################
+#####################################################################################################################
 
 #imports the RColorBrewer, the class intervals package and the mapping packages rgdal, maptools, sp
 library("rgdal")
@@ -11,10 +11,10 @@ library("RColorBrewer")
 library("classInt")
 library("maptools")
 library("sp")
-###################################################################################################################
+####################################################################################################################
 
-##Step 1 Reading in the data#####################################################################
-#Reads in the 2001 TTWA shape files ##############################################################################
+##Step 1 Reading in the data########################################################################################
+#Reads in the 2001 TTWA shape files ################################################################################
 ttwa<-readOGR("filepath1", "TTWA_2001_UK_BFE")
 
 
@@ -28,11 +28,11 @@ broadband<-read.csv("filepath2", header=TRUE, stringsAsFactors=FALSE)
 postcodes<-read.csv("filepath3", header=TRUE,stringsAsFactors=FALSE)
 
 ###################################################################################################################
-##Step 2 Cleans up the data###################################################################################
+##Step 2 Cleans up the data########################################################################################
 
 #removes the spaces in the postcode data file 
 postcodes$pcd<-gsub(" ", "", postcodes$pcd)  #This is the transformation that's needed to match to the postcode lookup file
-########################################################################################################
+##################################################################################################################
 
 ###################################################################################################################
 ##Step 3 merge the broadband data with the postcode file
@@ -43,17 +43,17 @@ new<-merge(broadband, postcodes, by.x="postcode"  , by.y="pcd" , all.x=TRUE)
 #Calculates how many postcodes we match
 f<-broadband$postcode %in% postcodes$pcd
 table(f) # table(f) FALSE=106 i.e. 106 of the postcodes don't match. We deal with them separately in step 4
-#################################################################################################
+##################################################################################################################
 
 ###################################################################################################################
 ##Step 4 merge in the postcodes that were missing from the file and import their longitudes and lattitudes
-######################Matches the missing codes###################################
+######################Matches the missing codes###################################################################
 #Reads in the missing codes which have been geocoded separately using
 # the website  http://www.doogal.co.uk/BatchGeocoding.php
 
 misscode<-read.csv("filepath4", header=T)#########Pulls in the longitude and latitude variables into the new file
-new$long<-ifelse(new$postcode %in% misscode$ï..Address , misscode$Long[match(new$postcode, misscode$ï..Address)], new$long)
-new$lat<-ifelse(new$postcode %in% misscode$ï..Address , misscode$Lat[match(new$postcode,misscode$ï..Address )], new$lat)
+new$long<-ifelse(new$postcode %in% misscode$Ã¯..Address , misscode$Long[match(new$postcode, misscode$Ã¯..Address)], new$long)
+new$lat<-ifelse(new$postcode %in% misscode$Ã¯..Address , misscode$Lat[match(new$postcode,misscode$Ã¯..Address )], new$lat)
 
 
 #Does a check to see if that has worked
@@ -110,7 +110,7 @@ aggdata1 <-aggregate(hd[,1],list(hd$TTWA01CD),FUN=mean, na.rm=TRUE)
 ttwa@data=data.frame(ttwa@data, aggdata1[match(ttwa@data[,"TTWA01CD"], aggdata1[, "Group.1"]),])
 ###################################################################################################################
 
-##Step 10 plots the  Super Fast Broadband Map availability########################################################
+##Step 10 plots the  Super Fast Broadband Map availability#########################################################
 breaks2<-classIntervals(as.numeric(ttwa@data$x),n=6,style="fixed", fixedBreaks=c(0, 20,40,60,80,100))$brks
 my_colours<-brewer.pal(5, "PuBu") 
 plot(ttwa, col=my_colours[findInterval(ttwa@data$x, breaks2, all.inside=FALSE)],axes=FALSE, border=FALSE)
